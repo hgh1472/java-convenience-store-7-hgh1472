@@ -1,8 +1,8 @@
 # java-convenience-store-precourse
-- [ ]  상품 목록과 행사 목록을 파일 입출력을 통해 불러온다.
-    - [ ]  `src/main/resources/products.md` 와 `src/main/resources/promotion.md` 파일 이용
-    - [ ]  환영 인사와 함께 상품명, 가격, 프로모션 이름, 재고를 안내한다.
-    - [ ]  재고가 0일 경우, `재고 없음` 을 출력한다.
+- [x]  상품 목록과 행사 목록을 파일 입출력을 통해 불러온다.
+    - [x]  `src/main/resources/products.md` 와 `src/main/resources/promotion.md` 파일 이용
+    - [x]  환영 인사와 함께 상품명, 가격, 프로모션 이름, 재고를 안내한다.
+    - [x]  재고가 0일 경우, `재고 없음` 을 출력한다.
 - [ ]  구매할 상품과 수량을 입력받는다.
     - [ ]  입력 요청 메시지를 출력한다.
     - [ ]  개별 상품은 대괄호로 묶어 쉼표로 구분한다.
