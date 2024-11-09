@@ -7,8 +7,10 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import store.dto.OrderRequest;
 import store.dto.ProductInput;
 import store.dto.PromotionInput;
+import store.model.Order;
 import store.model.Product;
 import store.model.Promotion;
 import store.model.PromotionPolicy;
@@ -64,5 +66,31 @@ public class ConvenienceServiceTest {
         assertThat(product.getPrice()).isEqualTo(1000);
         assertThat(product.getQuantity()).isEqualTo(10);
         assertThat(product.getPromotionName()).isEqualTo("탄산2+1");
+    }
+
+    @Test
+    @DisplayName("제품을 주문한다.")
+    public void order() {
+        // GIVEN
+        String[] coke = {"콜라", "1000", "10", "탄산2+1"};
+        String[] ramen = {"컵라면", "1700", "10", "null"};
+        productRepository.save(Product.from(new ProductInput(coke)));
+        productRepository.save(Product.from(new ProductInput(ramen)));
+
+        List<OrderRequest> orderRequests = List.of(new OrderRequest("[컵라면-2]"), new OrderRequest("[콜라-4]"));
+
+        // WHEN
+        List<Order> orders = convenienceService.createOrders(orderRequests);
+
+        // THEN
+        assertThat(orders).hasSize(2);
+
+        Order first = orders.getFirst();
+        assertThat(first.getProductName()).isEqualTo("컵라면");
+        assertThat(first.getQuantity()).isEqualTo(2);
+
+        Order last = orders.getLast();
+        assertThat(last.getProductName()).isEqualTo("콜라");
+        assertThat(last.getQuantity()).isEqualTo(4);
     }
 }
