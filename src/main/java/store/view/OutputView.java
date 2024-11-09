@@ -10,4 +10,8 @@ public class OutputView {
         System.out.println("현재 보유하고 있는 상품입니다.\n");
         responses.forEach(System.out::println);
     }
+
+    public void showError(IllegalArgumentException e) {
+        System.out.println(e.getMessage());
+    }
 }

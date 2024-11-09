@@ -1,6 +1,7 @@
 package store.controller;
 
 import java.util.List;
+import store.dto.OrderRequest;
 import store.dto.ProductInput;
 import store.dto.PromotionInput;
 import store.model.Order;
@@ -26,7 +27,22 @@ public class ConvenienceController {
     public void run() {
         registerData();
         printData();
-        List<Order> orders = convenienceService.createOrders(inputView.readOrders());
+        List<Order> orders = getOrders();
+    }
+
+    private List<Order> getOrders() {
+        List<OrderRequest> orderRequests = retryIfHasError(inputView::readOrders);
+        return convenienceService.createOrders(orderRequests);
+    }
+
+    private <T> T retryIfHasError(Retryable<T> retryable) {
+        while (true) {
+            try {
+                return retryable.execute();
+            } catch (IllegalArgumentException e) {
+                outputView.showError(e);
+            }
+        }
     }
 
     private void printData() {
