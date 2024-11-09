@@ -3,6 +3,7 @@ package store.controller;
 import java.util.List;
 import store.dto.ProductInput;
 import store.dto.PromotionInput;
+import store.model.Order;
 import store.service.ConvenienceService;
 import store.view.InputView;
 import store.view.OutputView;
@@ -25,6 +26,7 @@ public class ConvenienceController {
     public void run() {
         registerData();
         printData();
+        List<Order> orders = convenienceService.createOrders(inputView.readOrders());
     }
 
     private void printData() {
