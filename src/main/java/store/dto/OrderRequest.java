@@ -31,7 +31,7 @@ public class OrderRequest {
 
     private void validateForm(Matcher matcher) {
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("[ERROR] 잘못된 주문 양식입니다.");
+            throw new IllegalArgumentException("[ERROR] 잘못된 입력입니다. 다시 입력해 주세요.");
         }
     }
 
