@@ -40,7 +40,12 @@ public class Receipt {
     }
 
     public void applyMembershipDiscount() {
-        int canMembershipDiscount = totalPrice - promotionDiscount;
+        int canMembershipDiscount = 0;
+        for (Order order : orders) {
+            if (order.getPromotionQuantity() == 0) {
+                canMembershipDiscount += order.getTotalQuantity() * order.getProduct().getPrice();
+            }
+        }
         this.membershipDiscount = Math.min(8000, canMembershipDiscount * 30 / 100);
     }
 }
