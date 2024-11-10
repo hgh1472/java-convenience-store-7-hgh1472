@@ -46,4 +46,9 @@ public class InputView {
         }
         throw new IllegalArgumentException("[ERROR] Y 또는 N을 입력해 주세요.");
     }
+
+    public Boolean readMembership() {
+        System.out.println("멤버십 할인을 받으시겠습니까? (Y/N)");
+        return readYesOrNo();
+    }
 }

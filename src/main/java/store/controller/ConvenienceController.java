@@ -11,6 +11,7 @@ import store.exception.NoPromotionException;
 import store.model.Order;
 import store.model.Product;
 import store.model.Promotion;
+import store.model.Receipt;
 import store.service.ConvenienceService;
 import store.view.InputView;
 import store.view.OutputView;
@@ -37,6 +38,8 @@ public class ConvenienceController {
         for (Order order : orders) {
             applyPromotions(order);
         }
+        Boolean isMembership = retryIfHasError(inputView::readMembership);
+        Receipt receipt = service.getReceipt(orders, isMembership);
     }
 
     private void applyPromotions(Order order) {

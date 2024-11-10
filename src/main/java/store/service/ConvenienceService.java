@@ -11,6 +11,7 @@ import store.model.Order;
 import store.model.Product;
 import store.model.Promotion;
 import store.model.PromotionPolicy;
+import store.model.Receipt;
 import store.repository.ProductRepository;
 import store.repository.PromotionRepository;
 
@@ -56,7 +57,8 @@ public class ConvenienceService {
         List<Order> orders = new ArrayList<>();
         for (OrderRequest orderRequest : orderRequests) {
             validateOrderRequest(orderRequest);
-            orders.add(Order.from(orderRequest));
+            int price = productRepository.findDefaultProductByName(orderRequest.getProductName()).getPrice();
+            orders.add(Order.of(orderRequest, price));
         }
         return orders;
     }
@@ -127,5 +129,26 @@ public class ConvenienceService {
             Product promotionProduct = productRepository.findPromotionProductByName(order.getProductName());
             promotionProduct.sold(order.getPromotionQuantity());
         }
+    }
+
+    public Receipt getReceipt(List<Order> orders, boolean isMembership) {
+        Receipt receipt = new Receipt();
+        for (Order order : orders) {
+            Product defaultProduct = productRepository.findDefaultProductByName(order.getProductName());
+            int totalPrice = defaultProduct.getPrice() * order.getTotalQuantity();
+            int promotionDiscount = 0;
+            if (order.getPromotionQuantity() > 0) {
+                Product promotionProduct = productRepository.findPromotionProductByName(order.getProductName());
+                PromotionPolicy policy = promotionRepository.findByPromotionName(promotionProduct.getPromotionName())
+                        .getPolicy();
+                int freeCount = order.getPromotionQuantity() / (policy.getBuy() + policy.getGet());
+                promotionDiscount += freeCount * promotionProduct.getPrice();
+            }
+            receipt.addOrder(order, totalPrice, promotionDiscount);
+        }
+        if (isMembership) {
+            receipt.applyMembershipDiscount();
+        }
+        return receipt;
     }
 }

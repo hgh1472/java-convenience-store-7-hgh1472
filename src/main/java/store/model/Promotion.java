@@ -34,7 +34,7 @@ public class Promotion {
     }
 
     public void validatePromotionDate(LocalDate date) {
-        if (startDate.isBefore(date) && endDate.isAfter(date)) {
+        if (date.isBefore(startDate) || date.isAfter(endDate)) {
             throw new InvalidPromotionDateException();
         }
     }
