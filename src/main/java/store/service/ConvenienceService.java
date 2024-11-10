@@ -74,13 +74,6 @@ public class ConvenienceService {
         validateQuantity(orderRequest, product);
     }
 
-    private void validateQuantity(OrderRequest orderRequest, Product product) {
-        int productQuantity = product.getDefaultQuantity() + product.getPromotionQuantity();
-        if (productQuantity < orderRequest.getQuantity()) {
-            throw new IllegalArgumentException("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
-        }
-    }
-
     public Promotion getPromotion(Product promotionProduct) {
         return promotionRepository.findByPromotionName(promotionProduct.getPromotionName());
     }
@@ -95,13 +88,11 @@ public class ConvenienceService {
 
     public void applyPromotion(int promotionQuantity, Order order, Promotion promotion) {
         PromotionPolicy policy = promotion.getPolicy();
-
-        int promotionSetQuantity = policy.getGet() + policy.getBuy();
-        int needPromotionQuantity = (order.getTotalQuantity() / promotionSetQuantity) * promotionSetQuantity;
+        int needPromotionQuantity = (order.getTotalQuantity() / policy.getSetQuantity()) * policy.getSetQuantity();
         int canPromotionQuantity = 0;
-        while (canPromotionQuantity + promotionSetQuantity <= needPromotionQuantity
-                && canPromotionQuantity + promotionSetQuantity <= promotionQuantity) {
-            canPromotionQuantity += promotionSetQuantity;
+        while (canPromotionQuantity + policy.getSetQuantity() <= needPromotionQuantity
+                && canPromotionQuantity + policy.getSetQuantity() <= promotionQuantity) {
+            canPromotionQuantity += policy.getSetQuantity();
         }
         order.applyPromotion(promotion, canPromotionQuantity);
     }
@@ -119,9 +110,15 @@ public class ConvenienceService {
         return -notAppliedPromotionQuantity;
     }
 
+    private void validateQuantity(OrderRequest orderRequest, Product product) {
+        int productQuantity = product.getDefaultQuantity() + product.getPromotionQuantity();
+        if (productQuantity < orderRequest.getQuantity()) {
+            throw new IllegalArgumentException("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
+        }
+    }
+
     public void commitOrder(Order order) {
         int defaultQuantity = order.getTotalQuantity() - order.getPromotionQuantity();
-
         Product product = productRepository.findByName(order.getProductName());
         product.soldDefault(defaultQuantity);
         if (order.getPromotionQuantity() > 0) {
