@@ -97,14 +97,12 @@ public class ConvenienceService {
         order.applyPromotion(promotion, canPromotionQuantity);
     }
 
-    public int getAdditionalPromotionQuantity(Product promotionProduct, Order order, PromotionPolicy policy) {
+    public int getAdditionalPromotionQuantity(int promotionQuantity, Order order, PromotionPolicy policy) {
         int notAppliedPromotionQuantity = order.getTotalQuantity() - order.getPromotionQuantity();
         if (notAppliedPromotionQuantity == 0) {
             return 0;
         }
-        if (notAppliedPromotionQuantity == policy.getBuy() &&
-                promotionProduct.getDefaultQuantity()
-                        >= policy.getGet() + policy.getBuy() + order.getPromotionQuantity()) {
+        if (canReceiveAdditionalPromotion(promotionQuantity, order, policy, notAppliedPromotionQuantity)) {
             return policy.getGet();
         }
         return -notAppliedPromotionQuantity;
@@ -146,5 +144,11 @@ public class ConvenienceService {
             promotionDiscount += freeCount * product.getPrice();
         }
         return promotionDiscount;
+    }
+
+    private boolean canReceiveAdditionalPromotion(int promotionQuantity, Order order, PromotionPolicy policy,
+                                                  int notAppliedPromotionQuantity) {
+        return notAppliedPromotionQuantity == policy.getBuy() &&
+                promotionQuantity >= order.getPromotionQuantity() + policy.getSetQuantity();
     }
 }
