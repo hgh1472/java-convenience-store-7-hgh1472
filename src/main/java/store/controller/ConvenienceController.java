@@ -34,28 +34,36 @@ public class ConvenienceController {
     public void run() {
         registerData();
         while (true) {
-            printData();
             List<Order> orders = getOrders();
-            for (Order order : orders) {
-                applyPromotions(order);
-            }
-            Boolean isMembership = retryIfHasError(inputView::readMembership);
-            Receipt receipt = service.getReceipt(orders, isMembership);
+            Receipt receipt = service.getReceipt(orders);
+            applyMembership(receipt);
             outputView.showReceipt(receipt);
-            Boolean isContinue = retryIfHasError(inputView::isContinuePurchase);
-            if (!isContinue) {
-                break;
+            if (!retryIfHasError(inputView::isContinuePurchase)) {
+                return;
             }
         }
     }
 
-    private void applyPromotions(Order order) {
+    private void applyPromotions(List<Order> orders) {
+        for (Order order : orders) {
+            applyPromotion(order);
+        }
+    }
+
+    private void applyMembership(Receipt receipt) {
+        Boolean isMembership = retryIfHasError(inputView::readMembership);
+        if (isMembership) {
+            receipt.applyMembershipDiscount();
+        }
+    }
+
+    private void applyPromotion(Order order) {
         try {
             Product promotionProduct = service.getPromotionProduct(order);
             Promotion promotion = service.getPromotion(promotionProduct);
             promotion.validatePromotionDate(order.getOrderDate());
             service.applyPromotion(promotionProduct.getDefaultQuantity(), order, promotion);
-            int additional = service.getAdditionalPromotionQuantity(promotionProduct, order, promotion.getPolicy());
+            int additional = service.getAdditionalPromotionQuantity(promotionProduct.getPromotionQuantity(), order, promotion.getPolicy());
             readAdditionalOrPurchase(order, additional, promotionProduct);
             service.commitOrder(order);
         } catch (NoPromotionException | InvalidPromotionDateException ignored) {
@@ -64,25 +72,36 @@ public class ConvenienceController {
 
     private void readAdditionalOrPurchase(Order order, int additional, Product promotionProduct) {
         if (additional > 0) {
-            if (retryIfHasError(() -> inputView.readAdditionalQuantity(
-                    new AdditionalQuantityRequest(promotionProduct.getName(), additional)))) {
-                order.getAdditionalPromotion(additional);
-            }
+            decideAdditionalPromotion(order, additional, promotionProduct);
         }
         if (additional < 0) {
-            if (!retryIfHasError(() -> inputView.readContinuePurchase(
-                    new RemoveNonPromotionRequest(promotionProduct.getName(),
-                            -additional)))) {
-                order.removeNonPromotionQuantity();
-            }
+            decideExcludeNonPromotion(order, additional, promotionProduct);
+        }
+    }
+
+    private void decideExcludeNonPromotion(Order order, int additional, Product promotionProduct) {
+        if (!retryIfHasError(() -> inputView.readContinuePurchase(
+                new RemoveNonPromotionRequest(promotionProduct.getName(),
+                        -additional)))) {
+            order.removeNonPromotionQuantity();
+        }
+    }
+
+    private void decideAdditionalPromotion(Order order, int additional, Product promotionProduct) {
+        if (retryIfHasError(() -> inputView.readAdditionalQuantity(
+                new AdditionalQuantityRequest(promotionProduct.getName(), additional)))) {
+            order.getAdditionalPromotion(additional);
         }
     }
 
     private List<Order> getOrders() {
-        return retryIfHasError(() -> {
+        printData();
+        List<Order> orders = retryIfHasError(() -> {
             List<OrderRequest> orderRequests = inputView.readOrders();
             return service.createOrders(orderRequests);
         });
+        applyPromotions(orders);
+        return orders;
     }
 
     private <T> T retryIfHasError(Retryable<T> retryable) {
