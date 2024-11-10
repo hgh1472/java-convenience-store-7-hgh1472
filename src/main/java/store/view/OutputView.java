@@ -20,17 +20,24 @@ public class OutputView {
     }
 
     public void showReceipt(Receipt receipt) {
-        System.out.println("==============W 편의점================");
-        int totalCount = 0;
-        System.out.printf("%s%s%s%n", convert("상품명", 16), convert("수량", 10), convert("금액", 10));
         List<Order> orders = receipt.getOrders();
-        for (Order order : orders) {
-            totalCount += order.getTotalQuantity();
-            Product product = order.getProduct();
-            System.out.printf("%s%-10d%,-10d%n", convert(product.getName(), 16), order.getTotalQuantity(),
-                    order.getTotalQuantity() * product.getPrice());
-        }
+        System.out.println("==============W 편의점================");
+        showPurchaseProducts(orders);
+        showPromotionGift(orders);
+        showResult(receipt, orders);
+    }
 
+    private void showResult(Receipt receipt, List<Order> orders) {
+        int totalCount = orders.stream().mapToInt(Order::getTotalQuantity).sum();
+        System.out.println("===================================");
+        System.out.printf("%s%-10d%-,10d\n", convert("총구매액", 16), totalCount, receipt.getTotalPrice());
+        System.out.printf("%s%-,10d\n", convert("행사할인", 26), -receipt.getPromotionDiscount());
+        System.out.printf("%s%-,10d\n", convert("멤버십할인", 26), -receipt.getMembershipDiscount());
+        System.out.printf("%s%-,10d\n", convert("내실돈", 26),
+                receipt.getTotalPrice() - receipt.getPromotionDiscount() - receipt.getMembershipDiscount());
+    }
+
+    private void showPromotionGift(List<Order> orders) {
         System.out.println("=============증     정===============");
         for (Order order : orders) {
             if (order.getPromotionQuantity() > 0) {
@@ -39,15 +46,18 @@ public class OutputView {
                 System.out.printf("%s%-10d\n", convert(order.getProduct().getName(), 16), freeCount);
             }
         }
-
-        System.out.printf("%s%-10d%-,10d\n", convert("총구매액", 16), totalCount, receipt.getTotalPrice());
-        System.out.printf("%s%-,10d\n", convert("행사할인", 26), -receipt.getPromotionDiscount());
-        System.out.printf("%s%-,10d\n", convert("멤버십할인", 26), -receipt.getMembershipDiscount());
-        System.out.printf("%s%-,10d\n", convert("내실돈", 26),
-                receipt.getTotalPrice() - receipt.getPromotionDiscount() - receipt.getMembershipDiscount());
     }
 
-    private static int getKorCnt(String kor) {
+    private void showPurchaseProducts(List<Order> orders) {
+        System.out.printf("%s%s%s%n", convert("상품명", 16), convert("수량", 10), convert("금액", 10));
+        for (Order order : orders) {
+            Product product = order.getProduct();
+            System.out.printf("%s%-10d%,-10d%n", convert(product.getName(), 16), order.getTotalQuantity(),
+                    order.getTotalQuantity() * product.getPrice());
+        }
+    }
+
+    private int getKorCnt(String kor) {
         int cnt = 0;
         for (int i = 0; i < kor.length(); i++) {
             if (kor.charAt(i) >= '가' && kor.charAt(i) <= '힣') {
@@ -57,8 +67,7 @@ public class OutputView {
         return cnt;
     }
 
-    // 전각문자의 개수만큼 문자열 길이를 빼주는 메서드
-    public static String convert(String word, int size) {
+    public String convert(String word, int size) {
         String formatter = String.format("%%-%ds", size - getKorCnt(word));
         return String.format(formatter, word);
     }
