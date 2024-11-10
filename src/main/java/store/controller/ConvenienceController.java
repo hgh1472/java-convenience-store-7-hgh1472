@@ -33,13 +33,20 @@ public class ConvenienceController {
 
     public void run() {
         registerData();
-        printData();
-        List<Order> orders = getOrders();
-        for (Order order : orders) {
-            applyPromotions(order);
+        while(true) {
+            printData();
+            List<Order> orders = getOrders();
+            for (Order order : orders) {
+                applyPromotions(order);
+            }
+            Boolean isMembership = retryIfHasError(inputView::readMembership);
+            Receipt receipt = service.getReceipt(orders, isMembership);
+            outputView.showReceipt(receipt);
+            Boolean isContinue = retryIfHasError(inputView::isContinuePurchase);
+            if (!isContinue) {
+                break;
+            }
         }
-        Boolean isMembership = retryIfHasError(inputView::readMembership);
-        Receipt receipt = service.getReceipt(orders, isMembership);
     }
 
     private void applyPromotions(Order order) {
@@ -72,8 +79,10 @@ public class ConvenienceController {
     }
 
     private List<Order> getOrders() {
-        List<OrderRequest> orderRequests = retryIfHasError(inputView::readOrders);
-        return service.createOrders(orderRequests);
+        return retryIfHasError(() -> {
+            List<OrderRequest> orderRequests = inputView.readOrders();
+            return service.createOrders(orderRequests);
+        });
     }
 
     private <T> T retryIfHasError(Retryable<T> retryable) {
