@@ -1,5 +1,7 @@
 package store.dto;
 
+import camp.nextstep.edu.missionutils.DateTimes;
+import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,12 +11,14 @@ public class OrderRequest {
 
     private String productName;
     private int quantity;
+    private LocalDate orderDate;
 
     public OrderRequest(String input) {
         Matcher matcher = PATTERN.matcher(input);
         validate(matcher);
         productName = matcher.group(1);
         quantity = parseQuantity(matcher.group(2));
+        orderDate = DateTimes.now().toLocalDate();
     }
 
     public String getProductName() {
@@ -23,6 +27,10 @@ public class OrderRequest {
 
     public int getQuantity() {
         return quantity;
+    }
+
+    public LocalDate getOrderDate() {
+        return orderDate;
     }
 
     private void validate(Matcher matcher) {

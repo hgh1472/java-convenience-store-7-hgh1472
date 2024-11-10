@@ -2,6 +2,7 @@ package store.model;
 
 import java.time.LocalDate;
 import store.dto.PromotionInput;
+import store.exception.InvalidPromotionDateException;
 
 public class Promotion {
     private final String name;
@@ -30,5 +31,11 @@ public class Promotion {
 
     public LocalDate getEndDate() {
         return endDate;
+    }
+
+    public void validatePromotionDate(LocalDate date) {
+        if (startDate.isBefore(date) && endDate.isAfter(date)) {
+            throw new InvalidPromotionDateException();
+        }
     }
 }

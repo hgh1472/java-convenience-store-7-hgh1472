@@ -39,4 +39,8 @@ public class Product {
     public String getPromotionName() {
         return promotionName;
     }
+
+    public void sold(int quantity) {
+        this.quantity -= quantity;
+    }
 }
