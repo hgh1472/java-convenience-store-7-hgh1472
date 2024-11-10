@@ -1,5 +1,6 @@
 package store.dto;
 
+import store.exception.ExceptionStatus;
 import store.exception.InvalidProductException;
 
 public class ProductInput {
@@ -10,11 +11,11 @@ public class ProductInput {
 
     public ProductInput(String[] input) {
         if (input.length != 4) {
-            throw new InvalidProductException();
+            throw new InvalidProductException(ExceptionStatus.INVALID_PRODUCT_DATA);
         }
         this.name = input[0];
-        this.price = Integer.parseInt(input[1]);
-        this.quantity = Integer.parseInt(input[2]);
+        this.price = parsePrice(input[1]);
+        this.quantity = parseQuantity(input[2]);
         this.promotionInput = input[3];
     }
 
@@ -32,5 +33,21 @@ public class ProductInput {
 
     public String getPromotionInput() {
         return promotionInput;
+    }
+
+    private int parsePrice(String input) {
+        try {
+            return Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            throw new InvalidProductException(ExceptionStatus.INVALID_PRODUCT_DATA);
+        }
+    }
+
+    private int parseQuantity(String input) {
+        try {
+            return Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            throw new InvalidProductException(ExceptionStatus.INVALID_PRODUCT_DATA);
+        }
     }
 }

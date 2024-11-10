@@ -7,6 +7,7 @@ import store.dto.OrderRequest;
 import store.dto.ProductInput;
 import store.dto.ProductShowResponse;
 import store.dto.PromotionInput;
+import store.exception.ExceptionStatus;
 import store.exception.NoProductException;
 import store.exception.NoPromotionException;
 import store.model.Order;
@@ -69,7 +70,7 @@ public class ConvenienceService {
                 Product product = productRepository.findByName(orderRequest.getProductName());
                 orders.add(Order.of(product, orderRequest));
             } catch (NoProductException e) {
-                throw new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.");
+                throw new IllegalArgumentException(e.getMessage());
             }
         }
         return orders;
@@ -79,10 +80,6 @@ public class ConvenienceService {
         String productName = orderRequest.getProductName();
         Product product = productRepository.findByName(productName);
         validateQuantity(orderRequest, product);
-    }
-
-    public Promotion getPromotion(Product product) {
-        return product.getPromotion().orElseThrow(NoPromotionException::new);
     }
 
     public void applyPromotion(Order order, Promotion promotion) {
@@ -133,9 +130,10 @@ public class ConvenienceService {
 
     private int getPromotionDiscount(Order order) {
         int promotionDiscount = 0;
-        if (order.getPromotionQuantity() > 0) {
+        if (order.isPromotionApplied()) {
             Product product = order.getProduct();
-            PromotionPolicy policy = product.getPromotion().orElseThrow(NoPromotionException::new).getPolicy();
+            PromotionPolicy policy = product.getPromotion()
+                    .orElseThrow(() -> new NoPromotionException(ExceptionStatus.NO_PROMOTION)).getPolicy();
             int freeCount = order.getPromotionQuantity() / policy.getSetQuantity();
             promotionDiscount += freeCount * product.getPrice();
         }

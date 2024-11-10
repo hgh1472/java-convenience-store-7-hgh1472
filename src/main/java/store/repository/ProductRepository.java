@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import store.exception.ExceptionStatus;
 import store.exception.NoProductException;
 import store.model.Product;
-import store.model.Promotion;
 
 public class ProductRepository {
     private Map<String, Product> products;
@@ -41,6 +40,6 @@ public class ProductRepository {
         if (products.containsKey(name)) {
             return products.get(name);
         }
-        throw new NoProductException();
+        throw new NoProductException(ExceptionStatus.NO_PRODUCT);
     }
 }

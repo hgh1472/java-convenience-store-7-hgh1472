@@ -6,6 +6,7 @@ import store.dto.OrderRequest;
 import store.dto.ProductInput;
 import store.dto.PromotionInput;
 import store.dto.RemoveNonPromotionRequest;
+import store.exception.ExceptionStatus;
 import store.exception.InvalidPromotionDateException;
 import store.exception.NoPromotionException;
 import store.model.Order;
@@ -81,7 +82,8 @@ public class ConvenienceController {
 
     private void applyPromotion(Order order) {
         try {
-            Promotion promotion = order.getProduct().getPromotion().orElseThrow(NoPromotionException::new);
+            Promotion promotion = order.getProduct().getPromotion().orElseThrow(() -> new NoPromotionException(
+                    ExceptionStatus.NON_PROMOTION_PRODUCT));
             promotion.validatePromotionDate(order.getOrderDate());
             service.applyPromotion(order, promotion);
             int additional = service.getAdditionalPromotionQuantity(order, promotion.getPolicy());
@@ -112,7 +114,7 @@ public class ConvenienceController {
 
     private void decideExcludeNonPromotion(Order order, int additional) {
         Product promotionProduct = order.getProduct();
-        if (!retryIfHasError(() -> inputView.readContinuePurchase(
+        if (!retryIfHasError(() -> inputView.readNonPromotion(
                 new RemoveNonPromotionRequest(promotionProduct.getName(),
                         -additional)))) {
             order.removeNonPromotionQuantity();

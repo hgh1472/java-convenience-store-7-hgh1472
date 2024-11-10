@@ -2,6 +2,7 @@ package store.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import store.exception.ExceptionStatus;
 import store.exception.NoPromotionException;
 import store.model.Promotion;
 
@@ -20,6 +21,6 @@ public class PromotionRepository {
         return promotions.stream()
                 .filter(promotion -> promotion.getName().equals(promotionName))
                 .findFirst()
-                .orElseThrow(NoPromotionException::new);
+                .orElseThrow(() -> new NoPromotionException(ExceptionStatus.NO_PROMOTION));
     }
 }

@@ -3,6 +3,7 @@ package store.dto;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import store.exception.ExceptionStatus;
 import store.exception.InvalidPromotionException;
 
 public class PromotionInput {
@@ -27,7 +28,7 @@ public class PromotionInput {
 
     private void validateInputLength(String[] input) {
         if (input.length != 5) {
-            throw new InvalidPromotionException();
+            throw new InvalidPromotionException(ExceptionStatus.INVALID_PROMOTION_DATA);
         }
     }
 
@@ -35,7 +36,7 @@ public class PromotionInput {
         try {
             return Integer.parseInt(input);
         } catch (NumberFormatException e) {
-            throw new InvalidPromotionException();
+            throw new InvalidPromotionException(ExceptionStatus.INVALID_PROMOTION_DATA);
         }
     }
 
@@ -43,7 +44,7 @@ public class PromotionInput {
         try {
             return LocalDate.parse(input, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         } catch (DateTimeParseException e) {
-            throw new InvalidPromotionException();
+            throw new InvalidPromotionException(ExceptionStatus.INVALID_PROMOTION_DATA);
         }
     }
 
