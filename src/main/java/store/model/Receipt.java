@@ -42,7 +42,7 @@ public class Receipt {
     public void applyMembershipDiscount() {
         int canMembershipDiscount = 0;
         for (Order order : orders) {
-            if (order.getPromotionQuantity() == 0) {
+            if (!order.isPromotionApplied()) {
                 canMembershipDiscount += order.getTotalQuantity() * order.getProduct().getPrice();
             }
         }
