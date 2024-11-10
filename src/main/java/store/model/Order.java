@@ -54,4 +54,8 @@ public class Order {
     public void removeNonPromotionQuantity() {
         this.totalQuantity = promotionQuantity;
     }
+
+    public boolean isPromotionApplied() {
+        return promotionQuantity > 0;
+    }
 }
