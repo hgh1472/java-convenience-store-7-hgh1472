@@ -1,5 +1,6 @@
 package store.model;
 
+import java.util.Optional;
 import store.dto.ProductInput;
 
 public class Product {
@@ -7,24 +8,24 @@ public class Product {
     private int price;
     private int defaultQuantity;
     private int promotionQuantity;
-    private String promotionName;
+    private Optional<Promotion> promotion;
 
-    private Product(String name, int price, int quantity, int promotionQuantity, String promotionName) {
+    private Product(String name, int price, int quantity, int promotionQuantity, Optional<Promotion> promotion) {
         this.name = name;
         this.price = price;
         this.defaultQuantity = quantity;
         this.promotionQuantity = promotionQuantity;
-        this.promotionName = promotionName;
+        this.promotion = promotion;
     }
 
-    public static Product from(ProductInput productInput) {
-        if (productInput.getPromotionInput().equals("null")) {
+    public static Product of(ProductInput productInput, Optional<Promotion> promotion) {
+        if (promotion.isEmpty()) {
             return new Product(
                     productInput.getName(),
                     productInput.getPrice(),
                     productInput.getQuantity(),
                     0,
-                    productInput.getPromotionInput()
+                    promotion
             );
         }
         return new Product(
@@ -32,7 +33,7 @@ public class Product {
                 productInput.getPrice(),
                 0,
                 productInput.getQuantity(),
-                productInput.getPromotionInput()
+                promotion
         );
     }
 
@@ -52,8 +53,8 @@ public class Product {
         return promotionQuantity;
     }
 
-    public String getPromotionName() {
-        return promotionName;
+    public Optional<Promotion> getPromotion() {
+        return promotion;
     }
 
     public void soldDefault(int quantity) {
@@ -68,7 +69,8 @@ public class Product {
         this.defaultQuantity = quantity;
     }
 
-    public void registerPromotionProduct(int promotionQuantity, String promotionName) {
+    public void registerPromotionProduct(int promotionQuantity, Optional<Promotion> promotion) {
         this.promotionQuantity = promotionQuantity;
+        this.promotion = promotion;
     }
 }

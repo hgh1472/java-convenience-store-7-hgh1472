@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import store.exception.NoProductException;
 import store.model.Product;
+import store.model.Promotion;
 
 public class ProductRepository {
     private Map<String, Product> products;
@@ -24,11 +26,11 @@ public class ProductRepository {
             before.registerDefaultProduct(product.getDefaultQuantity());
             return;
         }
-        before.registerPromotionProduct(product.getPromotionQuantity(), product.getPromotionName());
+        before.registerPromotionProduct(product.getPromotionQuantity(), product.getPromotion());
     }
 
     private boolean isDefaultProduct(Product product) {
-        return product.getPromotionName().equals("null");
+        return product.getPromotion().isEmpty();
     }
 
     public List<Product> findAll() {

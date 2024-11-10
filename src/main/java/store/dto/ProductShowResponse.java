@@ -18,11 +18,15 @@ public class ProductShowResponse {
     }
 
     public static ProductShowResponse from(Product product) {
+        String promotionName = "null";
+        if (product.getPromotion().isPresent()) {
+            promotionName = product.getPromotion().get().getName();
+        }
         return new ProductShowResponse(product.getName(),
                 product.getPrice(),
                 product.getDefaultQuantity(),
                 product.getPromotionQuantity(),
-                product.getPromotionName().replace("null", ""));
+                promotionName);
     }
 
     @Override

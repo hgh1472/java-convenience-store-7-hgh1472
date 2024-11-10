@@ -2,6 +2,7 @@ package store.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import store.dto.OrderRequest;
 import store.dto.ProductInput;
 import store.dto.ProductShowResponse;
@@ -43,7 +44,13 @@ public class ConvenienceService {
     }
 
     private void addProduct(ProductInput productInput) {
-        Product product = Product.from(productInput);
+        if (productInput.getPromotionInput().equals("null")) {
+            Product product = Product.of(productInput, Optional.empty());
+            productRepository.save(product);
+            return;
+        }
+        Promotion promotion = promotionRepository.findByPromotionName(productInput.getPromotionInput());
+        Product product = Product.of(productInput, Optional.of(promotion));
         productRepository.save(product);
     }
 
@@ -74,13 +81,13 @@ public class ConvenienceService {
         validateQuantity(orderRequest, product);
     }
 
-    public Promotion getPromotion(Product promotionProduct) {
-        return promotionRepository.findByPromotionName(promotionProduct.getPromotionName());
+    public Promotion getPromotion(Product product) {
+        return product.getPromotion().orElseThrow(NoPromotionException::new);
     }
 
     public Product getPromotionProduct(Order order) {
         Product product = productRepository.findByName(order.getProductName());
-        if (product.getPromotionName().equals("null")) {
+        if (product.getPromotion().isEmpty()) {
             throw new NoPromotionException();
         }
         return product;
@@ -138,8 +145,7 @@ public class ConvenienceService {
     private int getPromotionDiscount(Order order, Product product) {
         int promotionDiscount = 0;
         if (order.getPromotionQuantity() > 0) {
-            PromotionPolicy policy = promotionRepository.findByPromotionName(product.getPromotionName())
-                    .getPolicy();
+            PromotionPolicy policy = product.getPromotion().orElseThrow(NoPromotionException::new).getPolicy();
             int freeCount = order.getPromotionQuantity() / policy.getSetQuantity();
             promotionDiscount += freeCount * product.getPrice();
         }
