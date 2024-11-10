@@ -4,6 +4,8 @@ import store.exception.ExceptionStatus;
 import store.exception.InvalidProductException;
 
 public class ProductInput {
+    private static final String NON_PROMOTION = "null";
+
     private String name;
     private int price;
     private int quantity;
@@ -33,6 +35,10 @@ public class ProductInput {
 
     public String getPromotionInput() {
         return promotionInput;
+    }
+
+    public boolean isAvailablePromotion() {
+        return !promotionInput.equals(NON_PROMOTION);
     }
 
     private int parsePrice(String input) {

@@ -45,13 +45,13 @@ public class ConvenienceService {
     }
 
     private void addProduct(ProductInput productInput) {
-        if (productInput.getPromotionInput().equals("null")) {
-            Product product = Product.of(productInput, Optional.empty());
+        if (productInput.isAvailablePromotion()) {
+            Promotion promotion = promotionRepository.findByPromotionName(productInput.getPromotionInput());
+            Product product = Product.of(productInput, Optional.of(promotion));
             productRepository.save(product);
             return;
         }
-        Promotion promotion = promotionRepository.findByPromotionName(productInput.getPromotionInput());
-        Product product = Product.of(productInput, Optional.of(promotion));
+        Product product = Product.of(productInput, Optional.empty());
         productRepository.save(product);
     }
 
