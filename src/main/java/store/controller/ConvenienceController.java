@@ -86,8 +86,9 @@ public class ConvenienceController {
             service.applyPromotion(order, promotion);
             int additional = service.getAdditionalPromotionQuantity(order, promotion.getPolicy());
             readAdditionalOrPurchase(order, additional);
-            service.commitOrder(order);
         } catch (NoPromotionException | InvalidPromotionDateException ignored) {
+        } finally {
+            service.commitOrder(order);
         }
     }
 

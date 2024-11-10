@@ -116,12 +116,8 @@ public class ConvenienceService {
     }
 
     public void commitOrder(Order order) {
-        int defaultQuantity = order.getTotalQuantity() - order.getPromotionQuantity();
         Product product = order.getProduct();
-        product.soldDefault(defaultQuantity);
-        if (order.getPromotionQuantity() > 0) {
-            product.soldPromotion(order.getPromotionQuantity());
-        }
+        product.sold(order.getTotalQuantity());
     }
 
     public Receipt getReceipt(List<Order> orders) {

@@ -57,12 +57,13 @@ public class Product {
         return promotion;
     }
 
-    public void soldDefault(int quantity) {
-        this.defaultQuantity -= quantity;
-    }
-
-    public void soldPromotion(int quantity) {
-        this.promotionQuantity -= quantity;
+    public void sold(int quantity) {
+        if (promotionQuantity >= quantity) {
+            promotionQuantity -= quantity;
+            return;
+        }
+        defaultQuantity -= quantity - promotionQuantity;
+        promotionQuantity = 0;
     }
 
     public void registerDefaultProduct(int quantity) {
