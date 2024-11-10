@@ -32,15 +32,28 @@ public class ProductShowResponse {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if (promotionQuantity != 0) {
-            sb.append(String.format("- %s %,d원 %d개 %s\n", name, price, promotionQuantity, promotionName));
-        }
+        exchangePromotionString(sb);
+        exchangeDefaultString(sb);
+        return sb.toString();
+    }
+
+    private void exchangeDefaultString(StringBuilder sb) {
         if (quantity == 0) {
             sb.append(String.format("- %s %,d원 재고 없음\n", name, price));
         }
         if (quantity != 0) {
             sb.append(String.format("- %s %,d원 %d개\n", name, price, quantity));
         }
-        return sb.toString();
+    }
+
+    private void exchangePromotionString(StringBuilder sb) {
+        if (!promotionName.equals("null")) {
+            if (promotionQuantity != 0) {
+                sb.append(String.format("- %s %,d원 %d개 %s\n", name, price, promotionQuantity, promotionName));
+            }
+            if (promotionQuantity == 0) {
+                sb.append(String.format("- %s %,d원 재고 없음 %s\n", name, price, promotionName));
+            }
+        }
     }
 }
