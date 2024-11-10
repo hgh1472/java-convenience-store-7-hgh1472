@@ -3,6 +3,7 @@ package store.dto;
 import store.model.Product;
 
 public class ProductShowResponse {
+    private static final String NONE = "";
     private String name;
     private int price;
     private int quantity;
@@ -18,7 +19,7 @@ public class ProductShowResponse {
     }
 
     public static ProductShowResponse from(Product product) {
-        String promotionName = "null";
+        String promotionName = NONE;
         if (product.getPromotion().isPresent()) {
             promotionName = product.getPromotion().get().getName();
         }
@@ -47,7 +48,7 @@ public class ProductShowResponse {
     }
 
     private void exchangePromotionString(StringBuilder sb) {
-        if (!promotionName.equals("null")) {
+        if (!promotionName.equals(NONE)) {
             if (promotionQuantity != 0) {
                 sb.append(String.format("- %s %,d원 %d개 %s\n", name, price, promotionQuantity, promotionName));
             }
