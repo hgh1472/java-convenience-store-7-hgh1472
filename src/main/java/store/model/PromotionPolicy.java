@@ -23,6 +23,10 @@ public class PromotionPolicy {
         return get;
     }
 
+    public int getSetQuantity() {
+        return buy + get;
+    }
+
     public int getPromotionSet(int orderQuantity) {
         return orderQuantity / (buy + get);
     }

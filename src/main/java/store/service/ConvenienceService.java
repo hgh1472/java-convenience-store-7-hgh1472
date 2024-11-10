@@ -129,23 +129,25 @@ public class ConvenienceService {
         }
     }
 
-    public Receipt getReceipt(List<Order> orders, boolean isMembership) {
+    public Receipt getReceipt(List<Order> orders) {
         Receipt receipt = new Receipt();
         for (Order order : orders) {
             Product product = productRepository.findByName(order.getProductName());
             int totalPrice = product.getPrice() * order.getTotalQuantity();
-            int promotionDiscount = 0;
-            if (order.getPromotionQuantity() > 0) {
-                PromotionPolicy policy = promotionRepository.findByPromotionName(product.getPromotionName())
-                        .getPolicy();
-                int freeCount = order.getPromotionQuantity() / (policy.getBuy() + policy.getGet());
-                promotionDiscount += freeCount * product.getPrice();
-            }
+            int promotionDiscount = getPromotionDiscount(order, product);
             receipt.addOrder(order, totalPrice, promotionDiscount);
         }
-        if (isMembership) {
-            receipt.applyMembershipDiscount();
-        }
         return receipt;
+    }
+
+    private int getPromotionDiscount(Order order, Product product) {
+        int promotionDiscount = 0;
+        if (order.getPromotionQuantity() > 0) {
+            PromotionPolicy policy = promotionRepository.findByPromotionName(product.getPromotionName())
+                    .getPolicy();
+            int freeCount = order.getPromotionQuantity() / policy.getSetQuantity();
+            promotionDiscount += freeCount * product.getPrice();
+        }
+        return promotionDiscount;
     }
 }
