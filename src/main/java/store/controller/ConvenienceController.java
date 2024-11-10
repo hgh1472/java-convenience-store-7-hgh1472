@@ -44,16 +44,38 @@ public class ConvenienceController {
         }
     }
 
+    private void registerData() {
+        readPromotionsFromResources();
+        readProductsFromResources();
+    }
+
+    private void readPromotionsFromResources() {
+        List<PromotionInput> promotionInputs = reader.readPromotions();
+        service.registerPromotions(promotionInputs);
+    }
+
+    private void readProductsFromResources() {
+        List<ProductInput> productInputs = reader.readProducts();
+        service.registerProducts(productInputs);
+    }
+
+    private List<Order> getOrders() {
+        printData();
+        List<Order> orders = retryIfHasError(() -> {
+            List<OrderRequest> orderRequests = inputView.readOrders();
+            return service.createOrders(orderRequests);
+        });
+        applyPromotions(orders);
+        return orders;
+    }
+
+    private void printData() {
+        outputView.printProducts(service.showProducts());
+    }
+
     private void applyPromotions(List<Order> orders) {
         for (Order order : orders) {
             applyPromotion(order);
-        }
-    }
-
-    private void applyMembership(Receipt receipt) {
-        Boolean isMembership = retryIfHasError(inputView::readMembership);
-        if (isMembership) {
-            receipt.applyMembershipDiscount();
         }
     }
 
@@ -79,6 +101,13 @@ public class ConvenienceController {
         }
     }
 
+    private void decideAdditionalPromotion(Order order, int additional, Product promotionProduct) {
+        if (retryIfHasError(() -> inputView.readAdditionalQuantity(
+                new AdditionalQuantityRequest(promotionProduct.getName(), additional)))) {
+            order.getAdditionalPromotion(additional);
+        }
+    }
+
     private void decideExcludeNonPromotion(Order order, int additional, Product promotionProduct) {
         if (!retryIfHasError(() -> inputView.readContinuePurchase(
                 new RemoveNonPromotionRequest(promotionProduct.getName(),
@@ -87,21 +116,11 @@ public class ConvenienceController {
         }
     }
 
-    private void decideAdditionalPromotion(Order order, int additional, Product promotionProduct) {
-        if (retryIfHasError(() -> inputView.readAdditionalQuantity(
-                new AdditionalQuantityRequest(promotionProduct.getName(), additional)))) {
-            order.getAdditionalPromotion(additional);
+    private void applyMembership(Receipt receipt) {
+        Boolean isMembership = retryIfHasError(inputView::readMembership);
+        if (isMembership) {
+            receipt.applyMembershipDiscount();
         }
-    }
-
-    private List<Order> getOrders() {
-        printData();
-        List<Order> orders = retryIfHasError(() -> {
-            List<OrderRequest> orderRequests = inputView.readOrders();
-            return service.createOrders(orderRequests);
-        });
-        applyPromotions(orders);
-        return orders;
     }
 
     private <T> T retryIfHasError(Retryable<T> retryable) {
@@ -112,24 +131,5 @@ public class ConvenienceController {
                 outputView.showError(e);
             }
         }
-    }
-
-    private void printData() {
-        outputView.printProducts(service.showProducts());
-    }
-
-    private void registerData() {
-        readPromotionsFromResources();
-        readProductsFromResources();
-    }
-
-    private void readPromotionsFromResources() {
-        List<PromotionInput> promotionInputs = reader.readPromotions();
-        service.registerPromotions(promotionInputs);
-    }
-
-    private void readProductsFromResources() {
-        List<ProductInput> productInputs = reader.readProducts();
-        service.registerProducts(productInputs);
     }
 }
