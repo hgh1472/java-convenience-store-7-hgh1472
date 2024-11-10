@@ -4,27 +4,21 @@ import java.time.LocalDate;
 import store.dto.OrderRequest;
 
 public class Order {
-    private String productName;
-    private int price;
+    private Product product;
     private int totalQuantity;
     private int promotionQuantity;
     private LocalDate orderDate;
     private Promotion promotion;
 
-    private Order(String productName, int price, int totalQuantity, LocalDate orderDate) {
-        this.productName = productName;
-        this.price = price;
+    private Order(Product product, int totalQuantity, LocalDate orderDate) {
+        this.product = product;
         this.totalQuantity = totalQuantity;
         this.promotionQuantity = 0;
         this.orderDate = orderDate;
     }
 
-    public String getProductName() {
-        return productName;
-    }
-
-    public int getPrice() {
-        return price;
+    public Product getProduct() {
+        return product;
     }
 
     public int getTotalQuantity() {
@@ -43,8 +37,8 @@ public class Order {
         return promotion;
     }
 
-    public static Order of(OrderRequest orderRequest, int price) {
-        return new Order(orderRequest.getProductName(), price, orderRequest.getQuantity(), orderRequest.getOrderDate());
+    public static Order of(Product product, OrderRequest orderRequest) {
+        return new Order(product, orderRequest.getQuantity(), orderRequest.getOrderDate());
     }
 
     public void applyPromotion(Promotion promotion, int promotionQuantity) {

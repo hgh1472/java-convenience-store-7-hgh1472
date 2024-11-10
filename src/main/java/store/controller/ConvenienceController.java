@@ -81,34 +81,36 @@ public class ConvenienceController {
 
     private void applyPromotion(Order order) {
         try {
-            Product promotionProduct = service.getPromotionProduct(order);
-            Promotion promotion = service.getPromotion(promotionProduct);
+            Promotion promotion = order.getProduct().getPromotion().orElseThrow(NoPromotionException::new);
             promotion.validatePromotionDate(order.getOrderDate());
-            service.applyPromotion(promotionProduct.getDefaultQuantity(), order, promotion);
-            int additional = service.getAdditionalPromotionQuantity(promotionProduct.getPromotionQuantity(), order, promotion.getPolicy());
-            readAdditionalOrPurchase(order, additional, promotionProduct);
+            service.applyPromotion(order, promotion);
+            int additional = service.getAdditionalPromotionQuantity(order, promotion.getPolicy());
+            readAdditionalOrPurchase(order, additional);
             service.commitOrder(order);
         } catch (NoPromotionException | InvalidPromotionDateException ignored) {
         }
     }
 
-    private void readAdditionalOrPurchase(Order order, int additional, Product promotionProduct) {
+    private void readAdditionalOrPurchase(Order order, int additional) {
+        Product product = order.getProduct();
         if (additional > 0) {
-            decideAdditionalPromotion(order, additional, promotionProduct);
+            decideAdditionalPromotion(order, additional);
         }
         if (additional < 0) {
-            decideExcludeNonPromotion(order, additional, promotionProduct);
+            decideExcludeNonPromotion(order, additional);
         }
     }
 
-    private void decideAdditionalPromotion(Order order, int additional, Product promotionProduct) {
+    private void decideAdditionalPromotion(Order order, int additional) {
+        Product promotionProduct = order.getProduct();
         if (retryIfHasError(() -> inputView.readAdditionalQuantity(
                 new AdditionalQuantityRequest(promotionProduct.getName(), additional)))) {
             order.getAdditionalPromotion(additional);
         }
     }
 
-    private void decideExcludeNonPromotion(Order order, int additional, Product promotionProduct) {
+    private void decideExcludeNonPromotion(Order order, int additional) {
+        Product promotionProduct = order.getProduct();
         if (!retryIfHasError(() -> inputView.readContinuePurchase(
                 new RemoveNonPromotionRequest(promotionProduct.getName(),
                         -additional)))) {

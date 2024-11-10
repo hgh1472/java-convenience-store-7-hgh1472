@@ -66,8 +66,8 @@ public class ConvenienceService {
         for (OrderRequest orderRequest : orderRequests) {
             try {
                 validateOrderRequest(orderRequest);
-                int price = productRepository.findByName(orderRequest.getProductName()).getPrice();
-                orders.add(Order.of(orderRequest, price));
+                Product product = productRepository.findByName(orderRequest.getProductName());
+                orders.add(Order.of(product, orderRequest));
             } catch (NoProductException e) {
                 throw new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.");
             }
@@ -85,26 +85,19 @@ public class ConvenienceService {
         return product.getPromotion().orElseThrow(NoPromotionException::new);
     }
 
-    public Product getPromotionProduct(Order order) {
-        Product product = productRepository.findByName(order.getProductName());
-        if (product.getPromotion().isEmpty()) {
-            throw new NoPromotionException();
-        }
-        return product;
-    }
-
-    public void applyPromotion(int promotionQuantity, Order order, Promotion promotion) {
+    public void applyPromotion(Order order, Promotion promotion) {
         PromotionPolicy policy = promotion.getPolicy();
         int needPromotionQuantity = (order.getTotalQuantity() / policy.getSetQuantity()) * policy.getSetQuantity();
         int canPromotionQuantity = 0;
         while (canPromotionQuantity + policy.getSetQuantity() <= needPromotionQuantity
-                && canPromotionQuantity + policy.getSetQuantity() <= promotionQuantity) {
+                && canPromotionQuantity + policy.getSetQuantity() <= order.getProduct().getPromotionQuantity()) {
             canPromotionQuantity += policy.getSetQuantity();
         }
         order.applyPromotion(promotion, canPromotionQuantity);
     }
 
-    public int getAdditionalPromotionQuantity(int promotionQuantity, Order order, PromotionPolicy policy) {
+    public int getAdditionalPromotionQuantity(Order order, PromotionPolicy policy) {
+        int promotionQuantity = order.getProduct().getPromotionQuantity();
         int notAppliedPromotionQuantity = order.getTotalQuantity() - order.getPromotionQuantity();
         if (notAppliedPromotionQuantity == 0) {
             return 0;
@@ -124,7 +117,7 @@ public class ConvenienceService {
 
     public void commitOrder(Order order) {
         int defaultQuantity = order.getTotalQuantity() - order.getPromotionQuantity();
-        Product product = productRepository.findByName(order.getProductName());
+        Product product = order.getProduct();
         product.soldDefault(defaultQuantity);
         if (order.getPromotionQuantity() > 0) {
             product.soldPromotion(order.getPromotionQuantity());
@@ -134,17 +127,18 @@ public class ConvenienceService {
     public Receipt getReceipt(List<Order> orders) {
         Receipt receipt = new Receipt();
         for (Order order : orders) {
-            Product product = productRepository.findByName(order.getProductName());
+            Product product = order.getProduct();
             int totalPrice = product.getPrice() * order.getTotalQuantity();
-            int promotionDiscount = getPromotionDiscount(order, product);
+            int promotionDiscount = getPromotionDiscount(order);
             receipt.addOrder(order, totalPrice, promotionDiscount);
         }
         return receipt;
     }
 
-    private int getPromotionDiscount(Order order, Product product) {
+    private int getPromotionDiscount(Order order) {
         int promotionDiscount = 0;
         if (order.getPromotionQuantity() > 0) {
+            Product product = order.getProduct();
             PromotionPolicy policy = product.getPromotion().orElseThrow(NoPromotionException::new).getPolicy();
             int freeCount = order.getPromotionQuantity() / policy.getSetQuantity();
             promotionDiscount += freeCount * product.getPrice();

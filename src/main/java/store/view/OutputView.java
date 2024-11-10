@@ -3,6 +3,7 @@ package store.view;
 import java.util.List;
 import store.dto.ProductShowResponse;
 import store.model.Order;
+import store.model.Product;
 import store.model.PromotionPolicy;
 import store.model.Receipt;
 
@@ -25,8 +26,9 @@ public class OutputView {
         List<Order> orders = receipt.getOrders();
         for (Order order : orders) {
             totalCount += order.getTotalQuantity();
-            System.out.printf("%s%-10d%,-10d%n", convert(order.getProductName(), 16), order.getTotalQuantity(),
-                    order.getTotalQuantity() * order.getPrice());
+            Product product = order.getProduct();
+            System.out.printf("%s%-10d%,-10d%n", convert(product.getName(), 16), order.getTotalQuantity(),
+                    order.getTotalQuantity() * product.getPrice());
         }
 
         System.out.println("=============증     정===============");
@@ -34,7 +36,7 @@ public class OutputView {
             if (order.getPromotionQuantity() > 0) {
                 PromotionPolicy policy = order.getPromotion().getPolicy();
                 int freeCount = order.getPromotionQuantity() / (policy.getBuy() + policy.getGet());
-                System.out.printf("%s%-10d\n", convert(order.getProductName(), 16), freeCount);
+                System.out.printf("%s%-10d\n", convert(order.getProduct().getName(), 16), freeCount);
             }
         }
 
