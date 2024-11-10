@@ -33,7 +33,7 @@ public class ConvenienceController {
 
     public void run() {
         registerData();
-        while(true) {
+        while (true) {
             printData();
             List<Order> orders = getOrders();
             for (Order order : orders) {
@@ -54,7 +54,7 @@ public class ConvenienceController {
             Product promotionProduct = service.getPromotionProduct(order);
             Promotion promotion = service.getPromotion(promotionProduct);
             promotion.validatePromotionDate(order.getOrderDate());
-            service.applyPromotion(promotionProduct.getQuantity(), order, promotion);
+            service.applyPromotion(promotionProduct.getDefaultQuantity(), order, promotion);
             int additional = service.getAdditionalPromotionQuantity(promotionProduct, order, promotion.getPolicy());
             readAdditionalOrPurchase(order, additional, promotionProduct);
             service.commitOrder(order);

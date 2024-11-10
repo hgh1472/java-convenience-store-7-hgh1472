@@ -6,6 +6,7 @@ import store.dto.OrderRequest;
 import store.dto.ProductInput;
 import store.dto.ProductShowResponse;
 import store.dto.PromotionInput;
+import store.exception.NoProductException;
 import store.exception.NoPromotionException;
 import store.model.Order;
 import store.model.Product;
@@ -56,28 +57,25 @@ public class ConvenienceService {
     public List<Order> createOrders(List<OrderRequest> orderRequests) {
         List<Order> orders = new ArrayList<>();
         for (OrderRequest orderRequest : orderRequests) {
-            validateOrderRequest(orderRequest);
-            int price = productRepository.findDefaultProductByName(orderRequest.getProductName()).getPrice();
-            orders.add(Order.of(orderRequest, price));
+            try {
+                validateOrderRequest(orderRequest);
+                int price = productRepository.findByName(orderRequest.getProductName()).getPrice();
+                orders.add(Order.of(orderRequest, price));
+            } catch (NoProductException e) {
+                throw new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.");
+            }
         }
         return orders;
     }
 
     private void validateOrderRequest(OrderRequest orderRequest) {
         String productName = orderRequest.getProductName();
-        List<Product> finds = productRepository.findByName(productName);
-        validateProductExists(finds);
-        validateQuantity(orderRequest, finds);
+        Product product = productRepository.findByName(productName);
+        validateQuantity(orderRequest, product);
     }
 
-    private void validateProductExists(List<Product> finds) {
-        if (finds.isEmpty()) {
-            throw new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요");
-        }
-    }
-
-    private void validateQuantity(OrderRequest orderRequest, List<Product> finds) {
-        int productQuantity = finds.stream().mapToInt(Product::getQuantity).sum();
+    private void validateQuantity(OrderRequest orderRequest, Product product) {
+        int productQuantity = product.getDefaultQuantity() + product.getPromotionQuantity();
         if (productQuantity < orderRequest.getQuantity()) {
             throw new IllegalArgumentException("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
         }
@@ -88,10 +86,11 @@ public class ConvenienceService {
     }
 
     public Product getPromotionProduct(Order order) {
-        return productRepository.findByName(order.getProductName()).stream()
-                .filter(product -> !product.getPromotionName().equals("null"))
-                .findAny()
-                .orElseThrow(NoPromotionException::new);
+        Product product = productRepository.findByName(order.getProductName());
+        if (product.getPromotionName().equals("null")) {
+            throw new NoPromotionException();
+        }
+        return product;
     }
 
     public void applyPromotion(int promotionQuantity, Order order, Promotion promotion) {
@@ -113,7 +112,8 @@ public class ConvenienceService {
             return 0;
         }
         if (notAppliedPromotionQuantity == policy.getBuy() &&
-                promotionProduct.getQuantity() >= policy.getGet() + policy.getBuy() + order.getPromotionQuantity()) {
+                promotionProduct.getDefaultQuantity()
+                        >= policy.getGet() + policy.getBuy() + order.getPromotionQuantity()) {
             return policy.getGet();
         }
         return -notAppliedPromotionQuantity;
@@ -122,27 +122,24 @@ public class ConvenienceService {
     public void commitOrder(Order order) {
         int defaultQuantity = order.getTotalQuantity() - order.getPromotionQuantity();
 
-        Product defaultProduct = productRepository.findDefaultProductByName(order.getProductName());
-        defaultProduct.sold(defaultQuantity);
-
+        Product product = productRepository.findByName(order.getProductName());
+        product.soldDefault(defaultQuantity);
         if (order.getPromotionQuantity() > 0) {
-            Product promotionProduct = productRepository.findPromotionProductByName(order.getProductName());
-            promotionProduct.sold(order.getPromotionQuantity());
+            product.soldPromotion(order.getPromotionQuantity());
         }
     }
 
     public Receipt getReceipt(List<Order> orders, boolean isMembership) {
         Receipt receipt = new Receipt();
         for (Order order : orders) {
-            Product defaultProduct = productRepository.findDefaultProductByName(order.getProductName());
-            int totalPrice = defaultProduct.getPrice() * order.getTotalQuantity();
+            Product product = productRepository.findByName(order.getProductName());
+            int totalPrice = product.getPrice() * order.getTotalQuantity();
             int promotionDiscount = 0;
             if (order.getPromotionQuantity() > 0) {
-                Product promotionProduct = productRepository.findPromotionProductByName(order.getProductName());
-                PromotionPolicy policy = promotionRepository.findByPromotionName(promotionProduct.getPromotionName())
+                PromotionPolicy policy = promotionRepository.findByPromotionName(product.getPromotionName())
                         .getPolicy();
                 int freeCount = order.getPromotionQuantity() / (policy.getBuy() + policy.getGet());
-                promotionDiscount += freeCount * promotionProduct.getPrice();
+                promotionDiscount += freeCount * product.getPrice();
             }
             receipt.addOrder(order, totalPrice, promotionDiscount);
         }

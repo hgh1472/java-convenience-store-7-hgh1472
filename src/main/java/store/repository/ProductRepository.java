@@ -1,43 +1,44 @@
 package store.repository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import store.exception.NoProductException;
-import store.exception.NoPromotionException;
 import store.model.Product;
 
 public class ProductRepository {
-    private List<Product> products;
+    private Map<String, Product> products;
 
     public ProductRepository() {
-        this.products = new ArrayList<>();
+        this.products = new HashMap<>();
     }
 
     public void save(Product product) {
-        products.add(product);
+        if (!products.containsKey(product.getName())) {
+            products.put(product.getName(), product);
+            return;
+        }
+        Product before = products.get(product.getName());
+        if (isDefaultProduct(product)) {
+            before.registerDefaultProduct(product.getDefaultQuantity());
+            return;
+        }
+        before.registerPromotionProduct(product.getPromotionQuantity(), product.getPromotionName());
+    }
+
+    private boolean isDefaultProduct(Product product) {
+        return product.getPromotionName().equals("null");
     }
 
     public List<Product> findAll() {
-        return products;
+        return new ArrayList<>(products.values());
     }
 
-    public List<Product> findByName(String name) {
-        return products.stream()
-                .filter(product -> product.getName().equals(name))
-                .toList();
-    }
-
-    public Product findDefaultProductByName(String name) {
-        return products.stream()
-                .filter(product -> product.getName().equals(name) && product.getPromotionName().equals("null"))
-                .findAny()
-                .orElseThrow(NoProductException::new);
-    }
-
-    public Product findPromotionProductByName(String name) {
-        return products.stream()
-                .filter(product -> product.getName().equals(name) && !product.getPromotionName().equals("null"))
-                .findAny()
-                .orElseThrow(NoPromotionException::new);
+    public Product findByName(String name) {
+        if (products.containsKey(name)) {
+            return products.get(name);
+        }
+        throw new NoProductException();
     }
 }
