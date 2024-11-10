@@ -21,20 +21,10 @@ public class Product {
     public static Product of(ProductInput productInput, Optional<Promotion> promotion) {
         if (promotion.isEmpty()) {
             return new Product(
-                    productInput.getName(),
-                    productInput.getPrice(),
-                    productInput.getQuantity(),
-                    0,
-                    promotion
-            );
+                    productInput.getName(), productInput.getPrice(), productInput.getQuantity(), 0, promotion);
         }
         return new Product(
-                productInput.getName(),
-                productInput.getPrice(),
-                0,
-                productInput.getQuantity(),
-                promotion
-        );
+                productInput.getName(), productInput.getPrice(), 0, productInput.getQuantity(), promotion);
     }
 
     public String getName() {
