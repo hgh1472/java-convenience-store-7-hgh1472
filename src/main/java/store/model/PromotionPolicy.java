@@ -1,18 +1,25 @@
 package store.model;
 
-import java.util.Objects;
+public enum PromotionPolicy {
+    NONE(0, 0),
+    BUY_ONE_GET_ONE(1,1),
+    BUY_TWO_GET_ONE(2, 1);
 
-public class PromotionPolicy {
-    private final int buy;
-    private final int get;
+    private int buy;
+    private int get;
 
-    private PromotionPolicy(int buy, int get) {
+    PromotionPolicy(int buy, int get) {
         this.buy = buy;
         this.get = get;
     }
 
     public static PromotionPolicy of(int buy, int get) {
-        return new PromotionPolicy(buy, get);
+        for (PromotionPolicy p : PromotionPolicy.values()) {
+            if (p.buy == buy && p.get == get) {
+                return p;
+            }
+        }
+        return NONE;
     }
 
     public int getBuy() {
@@ -24,32 +31,11 @@ public class PromotionPolicy {
     }
 
     public int getSetQuantity() {
-        return buy + get;
-    }
-
-    public int getPromotionSet(int orderQuantity) {
-        return orderQuantity / (buy + get);
+        return this.buy + this.get;
     }
 
     public int getPromotionQuantityInOrderQuantity(int orderQuantity) {
         int appliedPromotionCount = orderQuantity / (buy + get);
         return get * appliedPromotionCount;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        PromotionPolicy that = (PromotionPolicy) o;
-        return buy == that.buy && get == that.get;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(buy, get);
     }
 }
