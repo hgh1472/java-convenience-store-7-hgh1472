@@ -15,8 +15,8 @@ public class InputView {
     private static final String NON_PROMOTION_MESSAGE = "현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)\n";
     private static final String MEMBERSHIP_REQUEST_MESSAGE = "멤버십 할인을 받으시겠습니까? (Y/N)";
     private static final String CONTINUE_PURCHASE_MESSAGE = "감사합니다. 구매하고 싶은 다른 상품이 있나요? (Y/N)";
-
-
+    private static final String YES = "Y";
+    private static final String NO = "N";
 
     public List<OrderRequest> readOrders() {
         System.out.println(ORDER_REQUEST_MESSAGE);
@@ -43,10 +43,10 @@ public class InputView {
 
     private Boolean readYesOrNo() {
         String input = Console.readLine();
-        if (input.equals("Y")) {
+        if (input.equals(YES)) {
             return true;
         }
-        if (input.equals("N")) {
+        if (input.equals(NO)) {
             return false;
         }
         throw new IllegalArgumentException(ExceptionStatus.INVALID_YES_OR_NO.getMessage());
