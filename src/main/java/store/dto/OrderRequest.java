@@ -9,9 +9,9 @@ public class OrderRequest {
     private static final String REQUEST_PATTERN = "\\[([a-zA-Z가-힣0-9]+)-(\\d+)\\]";
     private static final Pattern PATTERN = Pattern.compile(REQUEST_PATTERN);
 
-    private String productName;
-    private int quantity;
-    private LocalDate orderDate;
+    private final String productName;
+    private final int quantity;
+    private final LocalDate orderDate;
 
     public OrderRequest(String input) {
         Matcher matcher = PATTERN.matcher(input);

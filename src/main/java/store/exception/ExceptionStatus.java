@@ -17,7 +17,7 @@ public enum ExceptionStatus {
 
     private static final String PREFIX = "[ERROR] ";
 
-    private String message;
+    private final String message;
 
     ExceptionStatus(String message) {
         this.message = PREFIX + message;

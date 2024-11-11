@@ -7,13 +7,12 @@ import store.exception.NoPromotionException;
 public class Receipt {
     private List<Order> orders;
 
-    private int totalPrice;
+    private final int totalPrice;
     private int promotionDiscount;
     private int membershipDiscount;
 
     private Receipt(List<Order> orders) {
         this.orders = orders;
-        this.totalPrice = 0;
         this.totalPrice = orders.stream()
                 .mapToInt(order -> order.getTotalQuantity() * order.getProduct().getPrice())
                 .sum();
@@ -39,12 +38,6 @@ public class Receipt {
 
     public int getMembershipDiscount() {
         return membershipDiscount;
-    }
-
-    public void addOrder(Order order, int totalPrice, int promotionDiscount) {
-        orders.add(order);
-        this.totalPrice += totalPrice;
-        this.promotionDiscount += promotionDiscount;
     }
 
     public void applyPromotionDiscount() {

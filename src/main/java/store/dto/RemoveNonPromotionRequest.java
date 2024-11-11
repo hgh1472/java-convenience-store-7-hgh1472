@@ -1,8 +1,8 @@
 package store.dto;
 
 public class RemoveNonPromotionRequest {
-    private String productName;
-    private int quantity;
+    private final String productName;
+    private final int quantity;
 
     public RemoveNonPromotionRequest(String productName, int quantity) {
         this.productName = productName;

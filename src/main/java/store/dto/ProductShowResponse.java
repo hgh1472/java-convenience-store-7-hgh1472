@@ -4,11 +4,12 @@ import store.model.Product;
 
 public class ProductShowResponse {
     private static final String NONE = "";
-    private String name;
-    private int price;
-    private int quantity;
-    private int promotionQuantity;
-    private String promotionName;
+
+    private final String name;
+    private final int price;
+    private final int quantity;
+    private final int promotionQuantity;
+    private final String promotionName;
 
     private ProductShowResponse(String name, int price, int quantity, int promotionQuantity, String promotionName) {
         this.name = name;

@@ -5,8 +5,8 @@ public enum PromotionPolicy {
     BUY_ONE_GET_ONE(1,1),
     BUY_TWO_GET_ONE(2, 1);
 
-    private int buy;
-    private int get;
+    private final int buy;
+    private final int get;
 
     PromotionPolicy(int buy, int get) {
         this.buy = buy;

@@ -6,10 +6,10 @@ import store.exception.InvalidProductException;
 public class ProductInput {
     private static final String NON_PROMOTION = "null";
 
-    private String name;
-    private int price;
-    private int quantity;
-    private String promotionInput;
+    private final String name;
+    private final int price;
+    private final int quantity;
+    private final String promotionInput;
 
     public ProductInput(String[] input) {
         if (input.length != 4) {
