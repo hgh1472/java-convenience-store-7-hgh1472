@@ -5,8 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import store.dto.ProductInput;
-import store.dto.PromotionInput;
+import store.dto.data.ProductInput;
+import store.dto.data.PromotionInput;
 import store.exception.CustomIOException;
 
 public class Reader {

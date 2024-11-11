@@ -1,4 +1,4 @@
-package store.dto;
+package store.dto.data;
 
 import store.exception.ExceptionStatus;
 import store.exception.InvalidProductException;

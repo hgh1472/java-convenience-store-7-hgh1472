@@ -1,7 +1,7 @@
 package store.model;
 
 import java.time.LocalDate;
-import store.dto.PromotionInput;
+import store.dto.data.PromotionInput;
 import store.exception.InvalidPromotionDateException;
 
 public class Promotion {

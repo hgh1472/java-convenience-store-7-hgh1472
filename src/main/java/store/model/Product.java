@@ -1,7 +1,7 @@
 package store.model;
 
 import java.util.Optional;
-import store.dto.ProductInput;
+import store.dto.data.ProductInput;
 
 public class Product {
     private String name;
