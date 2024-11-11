@@ -162,10 +162,12 @@ public class ConvenienceServiceTest {
         productRepository.save(Product.of(new ProductInput(coke), Optional.of(promotion)));
 
         Order order = Order.of(productRepository.findByName("콜라"), new OrderRequest("[콜라-3]"));
+        order.applyPromotion(promotion, 3);
+
+        Receipt receipt = Receipt.from(List.of(order));
 
         // WHEN
-        convenienceService.applyPromotion(order, promotion);
-        Receipt receipt = convenienceService.getReceipt(List.of(order));
+        receipt.applyPromotionDiscount();
 
         // THEN
         assertThat(receipt.getPromotionDiscount()).isEqualTo(1000);
