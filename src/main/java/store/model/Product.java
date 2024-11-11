@@ -2,6 +2,8 @@ package store.model;
 
 import java.util.Optional;
 import store.dto.data.ProductInput;
+import store.exception.DuplicatePromotionException;
+import store.exception.ExceptionStatus;
 
 public class Product {
     private String name;
@@ -56,12 +58,23 @@ public class Product {
         promotionQuantity = 0;
     }
 
-    public void registerDefaultProduct(int quantity) {
-        this.defaultQuantity = quantity;
+    public void registerProduct(Product product) {
+        if (product.getPromotion().isEmpty()) {
+            registerDefaultProduct(product);
+            return;
+        }
+        if (this.promotion.isPresent()) {
+            throw new DuplicatePromotionException(ExceptionStatus.DUPLICATE_PROMOTION);
+        }
+        registerPromotionProduct(product);
     }
 
-    public void registerPromotionProduct(int promotionQuantity, Optional<Promotion> promotion) {
-        this.promotionQuantity = promotionQuantity;
-        this.promotion = promotion;
+    private void registerDefaultProduct(Product product) {
+        this.defaultQuantity = product.getDefaultQuantity();
+    }
+
+    private void registerPromotionProduct(Product product) {
+        this.promotionQuantity = product.getPromotionQuantity();
+        this.promotion = product.getPromotion();
     }
 }
