@@ -7,7 +7,7 @@ public class Order {
     private Product product;
     private int totalQuantity;
     private int promotionQuantity;
-    private LocalDate orderDate;
+    private final LocalDate orderDate;
     private Promotion promotion;
 
     private Order(Product product, int totalQuantity, LocalDate orderDate) {
