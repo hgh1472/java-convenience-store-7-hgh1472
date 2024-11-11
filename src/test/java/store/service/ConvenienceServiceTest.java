@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,20 +53,18 @@ public class ConvenienceServiceTest {
     @DisplayName("제품을 등록한다.")
     public void registerProduct() {
         // GIVEN
-        String[] productInfo = {"콜라", "1000", "10", "탄산2+1"};
+        String[] productInfo = {"콜라", "1000", "10", "null"};
         List<ProductInput> productInputs = List.of(new ProductInput(productInfo));
 
         // WHEN
         convenienceService.registerProducts(productInputs);
 
         // THEN
-        List<Product> finds = productRepository.findByName("콜라");
-        assertThat(finds).hasSize(1);
-        Product product = finds.getFirst();
+        Product product = productRepository.findByName("콜라");
         assertThat(product.getName()).isEqualTo("콜라");
         assertThat(product.getPrice()).isEqualTo(1000);
-        assertThat(product.getQuantity()).isEqualTo(10);
-        assertThat(product.getPromotionName()).isEqualTo("탄산2+1");
+        assertThat(product.getDefaultQuantity()).isEqualTo(10);
+        assertThat(product.getPromotion()).isEmpty();
     }
 
     @Test
@@ -74,8 +73,8 @@ public class ConvenienceServiceTest {
         // GIVEN
         String[] coke = {"콜라", "1000", "10", "탄산2+1"};
         String[] ramen = {"컵라면", "1700", "10", "null"};
-        productRepository.save(Product.from(new ProductInput(coke)));
-        productRepository.save(Product.from(new ProductInput(ramen)));
+        productRepository.save(Product.of(new ProductInput(coke), Optional.empty()));
+        productRepository.save(Product.of(new ProductInput(ramen), Optional.empty()));
 
         List<OrderRequest> orderRequests = List.of(new OrderRequest("[컵라면-2]"), new OrderRequest("[콜라-4]"));
 
@@ -86,11 +85,11 @@ public class ConvenienceServiceTest {
         assertThat(orders).hasSize(2);
 
         Order first = orders.getFirst();
-        assertThat(first.getProductName()).isEqualTo("컵라면");
-        assertThat(first.getQuantity()).isEqualTo(2);
+        assertThat(first.getProduct().getName()).isEqualTo("컵라면");
+        assertThat(first.getTotalQuantity()).isEqualTo(2);
 
         Order last = orders.getLast();
-        assertThat(last.getProductName()).isEqualTo("콜라");
-        assertThat(last.getQuantity()).isEqualTo(4);
+        assertThat(last.getProduct().getName()).isEqualTo("콜라");
+        assertThat(last.getTotalQuantity()).isEqualTo(4);
     }
 }
