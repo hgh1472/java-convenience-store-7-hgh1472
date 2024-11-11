@@ -149,4 +149,25 @@ public class ConvenienceServiceTest {
         // THEN
         assertThat(receipt.getMembershipDiscount()).isEqualTo(3000);
     }
+
+    @Test
+    @DisplayName("프로모션 할인이 영수증에 반영된다.")
+    public void promotionReceipt() {
+        // GIVEN
+        String[] promotionInfo = {"프로모션", "2", "1", "2024-01-01", "2024-12-31"};
+        Promotion promotion = new Promotion(new PromotionInput(promotionInfo));
+        promotionRepository.save(promotion);
+
+        String[] coke = {"콜라", "1000", "10", "프로모션"};
+        productRepository.save(Product.of(new ProductInput(coke), Optional.of(promotion)));
+
+        Order order = Order.of(productRepository.findByName("콜라"), new OrderRequest("[콜라-3]"));
+
+        // WHEN
+        convenienceService.applyPromotion(order, promotion);
+        Receipt receipt = convenienceService.getReceipt(List.of(order));
+
+        // THEN
+        assertThat(receipt.getPromotionDiscount()).isEqualTo(1000);
+    }
 }
