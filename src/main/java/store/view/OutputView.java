@@ -57,18 +57,18 @@ public class OutputView {
         }
     }
 
-    private int getKorCnt(String kor) {
-        int cnt = 0;
-        for (int i = 0; i < kor.length(); i++) {
-            if (kor.charAt(i) >= '가' && kor.charAt(i) <= '힣') {
-                cnt++;
+    private int getKoreanCount(String input) {
+        int count = 0;
+        for (int i = 0; i < input.length(); i++) {
+            if (input.charAt(i) >= '가' && input.charAt(i) <= '힣') {
+                count++;
             }
         }
-        return cnt;
+        return count;
     }
 
-    public String convert(String word, int size) {
-        String formatter = String.format("%%-%ds", size - getKorCnt(word));
-        return String.format(formatter, word);
+    public String convert(String input, int size) {
+        String formatter = String.format("%%-%ds", size - getKoreanCount(input));
+        return String.format(formatter, input);
     }
 }
