@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import store.exception.DuplicatePromotionException;
 import store.exception.ExceptionStatus;
 import store.exception.NoProductException;
 import store.model.Product;
@@ -25,7 +26,14 @@ public class ProductRepository {
             before.registerDefaultProduct(product.getDefaultQuantity());
             return;
         }
+        validateDuplicatePromotion(product);
         before.registerPromotionProduct(product.getPromotionQuantity(), product.getPromotion());
+    }
+
+    private void validateDuplicatePromotion(Product product) {
+        if (product.getPromotion().isPresent()) {
+            throw new DuplicatePromotionException(ExceptionStatus.DUPLICATE_PROMOTION);
+        }
     }
 
     private boolean isDefaultProduct(Product product) {

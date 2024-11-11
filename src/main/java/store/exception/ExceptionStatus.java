@@ -2,6 +2,7 @@ package store.exception;
 
 public enum ExceptionStatus {
     INVALID_PROMOTION_DATA("잘못된 프로모션 데이터가 존재합니다."),
+    DUPLICATE_PROMOTION("한 제품에 중복된 프로모션이 존재합니다."),
     INVALID_PRODUCT_DATA("잘못된 상품 데이터가 존재합니다."),
 
     INVALID_FORMAT("올바르지 않은 형식으로 입력했습니다. 다시 입력해 주세요."),
