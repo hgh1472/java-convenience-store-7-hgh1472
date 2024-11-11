@@ -133,4 +133,20 @@ public class ConvenienceServiceTest {
         assertThat(order.getPromotion()).isEqualTo(promotion);
         assertThat(order.getPromotionQuantity()).isEqualTo(3);
     }
+
+    @Test
+    @DisplayName("멤버십 회원은 프로모션 미적용 금액의 30%를 할인받는다.")
+    public void membership() {
+        // GIVEN
+        String[] coke = {"콜라", "1000", "10", "null"};
+        productRepository.save(Product.of(new ProductInput(coke), Optional.empty()));
+        Receipt receipt = convenienceService.getReceipt(
+                List.of(Order.of(productRepository.findByName("콜라"), new OrderRequest("[콜라-10]"))));
+
+        // WHEN
+        receipt.applyMembershipDiscount();
+
+        // THEN
+        assertThat(receipt.getMembershipDiscount()).isEqualTo(3000);
+    }
 }
