@@ -3,9 +3,9 @@ package store.controller;
 import java.util.List;
 import store.dto.AdditionalQuantityRequest;
 import store.dto.OrderRequest;
+import store.dto.RemoveNonPromotionRequest;
 import store.dto.data.ProductInput;
 import store.dto.data.PromotionInput;
-import store.dto.RemoveNonPromotionRequest;
 import store.exception.ExceptionStatus;
 import store.exception.InvalidPromotionDateException;
 import store.exception.NoPromotionException;
@@ -37,8 +37,7 @@ public class ConvenienceController {
         while (true) {
             List<Order> orders = getOrders();
             Receipt receipt = service.getReceipt(orders);
-            receipt.applyPromotionDiscount();
-            applyMembership(receipt);
+            applyDiscount(receipt);
             outputView.showReceipt(receipt);
             if (!retryIfHasError(inputView::isContinuePurchase)) {
                 return;
@@ -127,6 +126,11 @@ public class ConvenienceController {
         if (isMembership) {
             receipt.applyMembershipDiscount();
         }
+    }
+
+    private void applyDiscount(Receipt receipt) {
+        receipt.applyPromotionDiscount();
+        applyMembership(receipt);
     }
 
     private <T> T retryIfHasError(Retryable<T> retryable) {
