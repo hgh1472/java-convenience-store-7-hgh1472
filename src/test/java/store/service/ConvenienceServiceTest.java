@@ -15,6 +15,7 @@ import store.model.Order;
 import store.model.Product;
 import store.model.Promotion;
 import store.model.PromotionPolicy;
+import store.model.Receipt;
 import store.repository.ProductRepository;
 import store.repository.PromotionRepository;
 
@@ -94,7 +95,7 @@ public class ConvenienceServiceTest {
     }
 
     @Test
-    @DisplayName("프로모션 기간 내에 포함된 경우만 할인을 적용한다.")
+    @DisplayName("프로모션 기간 내에 포함되지 않는 경우, 프로모션이 적용되지 않는다.")
     public void promotionDate() {
         // GIVEN
         String[] promotionInfo = {"프로모션", "2", "1", "2023-01-01", "2023-12-31"};
@@ -111,5 +112,25 @@ public class ConvenienceServiceTest {
         // THEN
         assertThat(orders).hasSize(1);
         assertThat(orders.getFirst().getPromotionQuantity()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("프로모션 혜택을 적용한다.")
+    public void promotion() {
+        // GIVEN
+        String[] promotionInfo = {"프로모션", "2", "1", "2024-01-01", "2024-12-31"};
+        Promotion promotion = new Promotion(new PromotionInput(promotionInfo));
+        promotionRepository.save(promotion);
+
+        String[] coke = {"콜라", "1000", "10", "프로모션"};
+        productRepository.save(Product.of(new ProductInput(coke), Optional.of(promotion)));
+
+        Order order = Order.of(productRepository.findByName("콜라"), new OrderRequest("[콜라-3]"));
+        // WHEN
+        convenienceService.applyPromotion(order, promotion);
+
+        // THEN
+        assertThat(order.getPromotion()).isEqualTo(promotion);
+        assertThat(order.getPromotionQuantity()).isEqualTo(3);
     }
 }
