@@ -1,7 +1,8 @@
 package store.model;
 
-import java.util.ArrayList;
 import java.util.List;
+import store.exception.ExceptionStatus;
+import store.exception.NoPromotionException;
 
 public class Receipt {
     private List<Order> orders;
@@ -10,11 +11,18 @@ public class Receipt {
     private int promotionDiscount;
     private int membershipDiscount;
 
-    public Receipt() {
-        this.orders = new ArrayList<Order>();
+    private Receipt(List<Order> orders) {
+        this.orders = orders;
         this.totalPrice = 0;
+        this.totalPrice = orders.stream()
+                .mapToInt(order -> order.getTotalQuantity() * order.getProduct().getPrice())
+                .sum();
         this.promotionDiscount = 0;
         this.membershipDiscount = 0;
+    }
+
+    public static Receipt from(List<Order> orders) {
+        return new Receipt(orders);
     }
 
     public List<Order> getOrders() {
@@ -37,6 +45,18 @@ public class Receipt {
         orders.add(order);
         this.totalPrice += totalPrice;
         this.promotionDiscount += promotionDiscount;
+    }
+
+    public void applyPromotionDiscount() {
+        for (Order order : orders) {
+            if (order.isPromotionApplied()) {
+                Product product = order.getProduct();
+                PromotionPolicy policy = product.getPromotion()
+                        .orElseThrow(() -> new NoPromotionException(ExceptionStatus.NO_PROMOTION)).getPolicy();
+                int freeCount = order.getPromotionQuantity() / policy.getSetQuantity();
+                this.promotionDiscount += freeCount * product.getPrice();
+            }
+        }
     }
 
     public void applyMembershipDiscount() {

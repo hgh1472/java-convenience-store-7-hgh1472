@@ -7,9 +7,7 @@ import store.dto.OrderRequest;
 import store.dto.ProductInput;
 import store.dto.ProductShowResponse;
 import store.dto.PromotionInput;
-import store.exception.ExceptionStatus;
 import store.exception.NoProductException;
-import store.exception.NoPromotionException;
 import store.model.Order;
 import store.model.Product;
 import store.model.Promotion;
@@ -118,26 +116,7 @@ public class ConvenienceService {
     }
 
     public Receipt getReceipt(List<Order> orders) {
-        Receipt receipt = new Receipt();
-        for (Order order : orders) {
-            Product product = order.getProduct();
-            int totalPrice = product.getPrice() * order.getTotalQuantity();
-            int promotionDiscount = getPromotionDiscount(order);
-            receipt.addOrder(order, totalPrice, promotionDiscount);
-        }
-        return receipt;
-    }
-
-    private int getPromotionDiscount(Order order) {
-        int promotionDiscount = 0;
-        if (order.isPromotionApplied()) {
-            Product product = order.getProduct();
-            PromotionPolicy policy = product.getPromotion()
-                    .orElseThrow(() -> new NoPromotionException(ExceptionStatus.NO_PROMOTION)).getPolicy();
-            int freeCount = order.getPromotionQuantity() / policy.getSetQuantity();
-            promotionDiscount += freeCount * product.getPrice();
-        }
-        return promotionDiscount;
+        return Receipt.from(orders);
     }
 
     private boolean canReceiveAdditionalPromotion(int promotionQuantity, Order order, PromotionPolicy policy,

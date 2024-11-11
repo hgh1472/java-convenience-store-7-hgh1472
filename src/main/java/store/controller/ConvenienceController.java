@@ -37,6 +37,7 @@ public class ConvenienceController {
         while (true) {
             List<Order> orders = getOrders();
             Receipt receipt = service.getReceipt(orders);
+            receipt.applyPromotionDiscount();
             applyMembership(receipt);
             outputView.showReceipt(receipt);
             if (!retryIfHasError(inputView::isContinuePurchase)) {
